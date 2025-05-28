@@ -1,0 +1,71 @@
+{
+  "simulation": {
+    "name": "omni_simulator Hypercube Performance Analysis",
+    "description": "Comprehensive evaluation of Duato's routing protocol on hypercube networks"
+  },
+  "network": {
+    "topology": "hypercube",
+    "hypercube_dimension": 4,
+    "buffer_size": 8,
+    "link_bandwidth": 2.0
+  },
+  "traffic": {
+    "pattern": "uniform",
+    "packet_injection_rates": [
+      0.01,
+      0.02,
+      0.03,
+      0.04,
+      0.05,
+      0.06,
+      0.07,
+      0.08,
+      0.09,
+      0.1,
+      0.11,
+      0.12,
+      0.13,
+      0.14,
+      0.15,
+      0.16,
+      0.17,
+      0.18,
+      0.19,
+      0.2,
+      0.22,
+      0.25
+    ],
+    "packet_size_flits": 4,
+    "warmup_cycles": 3000,
+    "measurement_cycles": 15000
+  },
+  "routing": {
+    "algorithm": "duato_hypercube",
+    "adaptive_threshold": 2,
+    "dimension_priorities": [
+      0,
+      1,
+      2,
+      3
+    ],
+    "deadlock_detection": true
+  },
+  "metrics": {
+    "collect_latency": true,
+    "collect_throughput": true,
+    "output_file": "omni_simulation_results.csv",
+    "detailed_stats": true
+  },
+  "experimental_setup": {
+    "runs_per_injection_rate": 5,
+    "confidence_interval": 0.95
+  },
+  "debug": {
+    "enabled": false,
+    "routing_verbose": false,
+    "packet_trace": false,
+    "deadlock_detection_verbose": false,
+    "performance_counters": false
+  },
+  "output_file": "/home/jian.sha/omni_simulator/results/duato_on_ecube_hypercube_20250526_230509.csv"
+}

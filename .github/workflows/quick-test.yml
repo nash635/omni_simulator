@@ -1,0 +1,79 @@
+name: Quick Experiment Validation
+
+on:
+  # Only run manually to save resources
+  workflow_dispatch:
+
+jobs:
+  quick-test:
+    name: Quick Experiment Test
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Install dependencies
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y build-essential gcc g++ python3 curl wget
+        
+    - name: Install Bazel (Manual - More Stable)
+      run: |
+        echo "🔧 Installing Bazel manually..."
+        curl -fsSL https://bazel.build/bazel-release.pub.gpg | gpg --dearmor >bazel-archive-keyring.gpg
+        sudo mv bazel-archive-keyring.gpg /usr/share/keyrings
+        echo "deb [arch=amd64 signed-by=/usr/share/keyrings/bazel-archive-keyring.gpg] https://storage.googleapis.com/bazel-apt stable jdk1.8" | sudo tee /etc/apt/sources.list.d/bazel.list
+        sudo apt-get update
+        sudo apt-get install -y bazel
+        echo "✅ Bazel installed"
+      
+    - name: Verify system setup
+      run: |
+        echo "=== System Information ==="
+        gcc --version
+        bazel --version
+        python3 --version
+        echo "=========================="
+        
+    - name: Check project structure
+      run: |
+        echo "Checking required files..."
+        test -f "run_experiment.sh" || (echo "❌ run_experiment.sh missing" && exit 1)
+        test -f "exp/duato_on_ecube_hypercube/duato_on_ecube_hypercube.json" || (echo "❌ Config missing" && exit 1)
+        test -f "BUILD" || (echo "❌ BUILD file missing" && exit 1)
+        test -f "WORKSPACE" || (echo "❌ WORKSPACE missing" && exit 1)
+        echo "✅ All required files present"
+        
+    - name: Validate configuration
+      run: |
+        echo "Validating JSON configuration..."
+        python3 -m json.tool exp/duato_on_ecube_hypercube/duato_on_ecube_hypercube.json > /dev/null
+        echo "✅ Configuration is valid JSON"
+        
+    - name: Test build
+      run: |
+        echo "Testing build process..."
+        bazel build //... --verbose_failures --disk_cache= --repository_cache=
+        echo "✅ Build successful"
+        
+    - name: Run experiment
+      timeout-minutes: 5
+      run: |
+        echo "Running experiment test..."
+        chmod +x run_experiment.sh
+        ./run_experiment.sh duato_on_ecube_hypercube
+        echo "✅ Experiment completed"
+        
+    - name: Check results
+      if: always()
+      run: |
+        echo "Checking for generated results..."
+        if [ -d "results" ]; then
+          echo "✅ Results directory found"
+          ls -la results/
+        fi
+        if [ -d "exp/duato_on_ecube_hypercube/results" ]; then
+          echo "✅ Experiment results directory found"
+          ls -la exp/duato_on_ecube_hypercube/results/
+        fi

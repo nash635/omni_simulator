@@ -1,0 +1,74 @@
+name: Simple CI Test
+
+on:
+  # Only run manually as fallback option
+  workflow_dispatch:
+
+jobs:
+  simple-test:
+    name: Simple Experiment Test (No Cache)
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Install dependencies
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y build-essential gcc g++ python3 python3-pip
+        
+    - name: Install Bazel (Manual - More Stable)
+      run: |
+        echo "🔧 Installing Bazel manually for better stability..."
+        curl -fsSL https://bazel.build/bazel-release.pub.gpg | gpg --dearmor >bazel-archive-keyring.gpg
+        sudo mv bazel-archive-keyring.gpg /usr/share/keyrings
+        echo "deb [arch=amd64 signed-by=/usr/share/keyrings/bazel-archive-keyring.gpg] https://storage.googleapis.com/bazel-apt stable jdk1.8" | sudo tee /etc/apt/sources.list.d/bazel.list
+        sudo apt-get update
+        sudo apt-get install -y bazel
+        bazel --version
+      
+    - name: Verify system
+      run: |
+        echo "=== System Information ==="
+        gcc --version
+        bazel --version
+        python3 --version
+        echo "=== Available Space ==="
+        df -h
+        echo "=========================="
+        
+    - name: Clean and build
+      run: |
+        echo "🔨 Building project (no cache)..."
+        bazel clean
+        bazel build //... --verbose_failures --disk_cache= --repository_cache=
+        echo "✅ Build completed"
+        
+    - name: Validate experiment config
+      run: |
+        echo "🔍 Validating experiment configuration..."
+        python3 -m json.tool exp/duato_on_ecube_hypercube/duato_on_ecube_hypercube.json > /dev/null
+        echo "✅ Configuration is valid"
+        
+    - name: Run experiment test
+      timeout-minutes: 5
+      run: |
+        echo "🚀 Running experiment test..."
+        chmod +x run_experiment.sh
+        mkdir -p results
+        ./run_experiment.sh duato_on_ecube_hypercube
+        echo "✅ Experiment completed"
+        
+    - name: Check results
+      run: |
+        echo "📊 Checking generated results..."
+        if [ -d "results" ] && [ "$(ls -A results 2>/dev/null)" ]; then
+          echo "✅ Results directory contains files:"
+          ls -la results/
+        fi
+        if [ -d "exp/duato_on_ecube_hypercube/results" ] && [ "$(ls -A exp/duato_on_ecube_hypercube/results 2>/dev/null)" ]; then
+          echo "✅ Experiment results directory contains files:"
+          ls -la exp/duato_on_ecube_hypercube/results/
+        fi
+        echo "✅ Test completed successfully"

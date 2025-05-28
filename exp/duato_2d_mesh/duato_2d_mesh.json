@@ -1,0 +1,69 @@
+{
+  "simulation": {
+    "name": "omni_simulator - Duato Protocol Simulation",
+    "description": "2D Mesh Network Simulation with Duato Routing Protocol using omni_simulator"
+  },
+  "network": {
+    "topology": "2D_mesh",
+    "size_2d": {
+      "width": 8,
+      "height": 8
+    },
+    "size_3d": {
+      "width": 4,
+      "height": 4,
+      "depth": 4
+    },
+    "link_bandwidth": 1.0,
+    "link_latency": 1.0,
+    "virtual_channels": 2,
+    "buffer_size": 4
+  },
+  "traffic": {
+    "pattern": "uniform",
+    "packet_injection_rates": [0.008, 0.009, 0.010, 0.011, 0.012, 0.013],
+    "packet_size_flits": 4,
+    "warmup_cycles": 1000,
+    "measurement_cycles": 10000,
+    "patterns": {
+      "uniform": {
+        "description": "Uniform random traffic"
+      },
+      "transpose": {
+        "description": "Transpose traffic pattern"
+      },
+      "hotspot": {
+        "description": "Hotspot traffic pattern",
+        "hotspot_ratio": 0.3,
+        "hotspot_nodes": [0, 63]
+      }
+    }
+  },
+  "routing": {
+    "algorithm": "duato",
+    "adaptive_threshold": 2,
+    "deadlock_detection": true
+  },
+  "metrics": {
+    "collect_latency": true,
+    "collect_throughput": true,
+    "output_file": "omni_simulation_results.csv",
+    "detailed_stats": true
+  },
+  "experimental_setup": {
+    "runs_per_injection_rate": 5,
+    "confidence_interval": 0.95,
+    "saturation_detection": {
+      "enabled": false,
+      "latency_threshold_multiplier": 10.0,
+      "throughput_drop_threshold": 0.1
+    }
+  },
+  "debug": {
+    "enabled": false,
+    "routing_verbose": false,
+    "packet_trace": false,
+    "deadlock_detection_verbose": false,
+    "performance_counters": false
+  }
+}
