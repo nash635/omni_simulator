@@ -1,47 +1,67 @@
 # GitHub Actions CI/CD Setup Guide
 
-This document explains the CI/CD setup for the omni_simulator project.
+This document explains the simplified CI/CD setup for the omni_simulator project.
 
 ## Workflow Overview
 
-The project includes two main CI/CD workflows:
+The project uses a single, streamlined CI workflow:
 
-### 1. Experiment Test (`experiment-test.yml`)
-**Primary Purpose**: Validates that the core experiment runs successfully
-- **Trigger**: Every push and pull request
-- **Test**: `./run_experiment.sh duato_on_ecube_hypercube`
+### CI/CD Pipeline (`ci.yml`)
+**Primary Purpose**: Comprehensive experiment testing and validation
+- **Trigger**: Automatic on push/PR to main branches + manual trigger
+- **Test Matrix**: GCC versions 9 and 11
+- **Core Test**: `./run_experiment.sh duato_on_ecube_hypercube`
 - **Timeout**: 5 minutes maximum
-- **Artifacts**: Saves experiment outputs and logs
-
-### 2. Full CI Pipeline (`ci.yml`)
-**Primary Purpose**: Comprehensive testing across multiple environments
-- **Multiple GCC versions**: 9, 11
-- **Cross-platform testing**: Ubuntu 20.04, 22.04
-- **Build verification**: Clean and incremental builds
-- **Configuration validation**: JSON syntax and project structure
+- **Artifacts**: Saves experiment outputs, logs, and results
+- **Features**:
+  - Automated Bazel installation and build
+  - Experiment environment validation
+  - Result analysis and summary generation
+  - Detailed test reports with GitHub step summaries
 
 ## Badge Status
 
-Add these badges to your README.md to show CI status:
+Add this badge to your README.md to show CI status:
 
 ```markdown
 [![CI/CD Pipeline](https://github.com/nash635/omni_simulator/actions/workflows/ci.yml/badge.svg)](https://github.com/nash635/omni_simulator/actions/workflows/ci.yml)
-[![Experiment Test](https://github.com/nash635/omni_simulator/actions/workflows/experiment-test.yml/badge.svg)](https://github.com/nash635/omni_simulator/actions/workflows/experiment-test.yml)
 ```
+
+## Manual Trigger
+
+You can manually trigger the CI pipeline from the GitHub Actions tab by:
+1. Go to **Actions** tab in your repository
+2. Select **CI/CD Pipeline** workflow
+3. Click **Run workflow** button
+4. Choose the branch and click **Run workflow**
+
+## Experiment Validation
+
+The CI pipeline automatically validates:
+- ✅ Build system (Bazel) setup and compilation
+- ✅ Experiment configuration files (JSON syntax)
+- ✅ Core experiment execution (`duato_on_ecube_hypercube`)
+- ✅ Result generation and analysis
+- ✅ System compatibility across GCC versions
+
+## Artifacts
+
+Each CI run preserves important artifacts for 30 days:
+- Experiment output logs
+- Performance analysis results
+- Generated CSV files and charts
+- Build and error logs
 
 ## Local Testing
 
-Before pushing changes, you can run the same tests locally:
+Before pushing changes, you can run the same test locally:
 
 ```bash
-# Quick validation
-.github/scripts/validate_ci.sh
+# Run the core experiment test
+./run_experiment.sh duato_on_ecube_hypercube
 
-# Full experiment test  
-.github/scripts/run_experiment_test.sh
-
-# macOS-specific test
-.github/scripts/macos_test.sh
+# Build the project with Bazel
+bazel build //... --verbose_failures
 ```
 
 ## Troubleshooting

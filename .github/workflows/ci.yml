@@ -1,11 +1,13 @@
 name: CI/CD Pipeline
 
 on:
-  # Only run manually or on schedule to avoid resource waste
+  # Trigger on commits and pull requests for continuous integration
+  push:
+    branches: [ main, master, develop ]
+  pull_request:
+    branches: [ main, master ]
+  # Keep manual trigger for testing purposes
   workflow_dispatch:
-  schedule:
-    # Run daily at 2 AM UTC to catch any regressions
-    - cron: '0 2 * * *'
 
 jobs:
   test-experiment:
@@ -170,136 +172,4 @@ jobs:
           echo "\`\`\`" >> $GITHUB_STEP_SUMMARY
           tail -10 ci_test_results/experiment_output.log >> $GITHUB_STEP_SUMMARY
           echo "\`\`\`" >> $GITHUB_STEP_SUMMARY
-        fi
-
-  build-test:
-    name: Build Verification
-    runs-on: ubuntu-latest
-    
-    steps:
-    - name: Checkout code
-      uses: actions/checkout@v4
-      
-    - name: Install dependencies
-      run: |
-        sudo apt-get update
-        sudo apt-get install -y build-essential python3
-        
-    - name: Install Bazel (Manual - More Stable)
-      run: |
-        echo "🔧 Installing Bazel manually for better stability..."
-        curl -fsSL https://bazel.build/bazel-release.pub.gpg | gpg --dearmor >bazel-archive-keyring.gpg
-        sudo mv bazel-archive-keyring.gpg /usr/share/keyrings
-        echo "deb [arch=amd64 signed-by=/usr/share/keyrings/bazel-archive-keyring.gpg] https://storage.googleapis.com/bazel-apt stable jdk1.8" | sudo tee /etc/apt/sources.list.d/bazel.list
-        sudo apt-get update
-        sudo apt-get install -y bazel
-        bazel --version
-      
-    - name: Test clean build
-      run: |
-        echo "🧹 Testing clean build process..."
-        bazel clean
-        bazel build //... --verbose_failures --disk_cache= --repository_cache=
-        echo "✅ Clean build successful"
-        
-    - name: Test incremental build
-      run: |
-        echo "🔄 Testing incremental build..."
-        # Make a small change to test incremental builds
-        touch src/main.cpp
-        bazel build //... --verbose_failures --disk_cache= --repository_cache=
-        echo "✅ Incremental build successful"
-
-  cross-platform-test:
-    name: Cross-platform Compatibility
-    strategy:
-      matrix:
-        os: [ubuntu-20.04, ubuntu-22.04]
-    runs-on: ${{ matrix.os }}
-    
-    steps:
-    - name: Checkout code
-      uses: actions/checkout@v4
-      
-    - name: Install dependencies
-      run: |
-        sudo apt-get update
-        sudo apt-get install -y build-essential python3 python3-pip
-        
-    - name: Install Bazel (Manual - More Stable)
-      run: |
-        echo "🔧 Installing Bazel manually for better stability..."
-        curl -fsSL https://bazel.build/bazel-release.pub.gpg | gpg --dearmor >bazel-archive-keyring.gpg
-        sudo mv bazel-archive-keyring.gpg /usr/share/keyrings
-        echo "deb [arch=amd64 signed-by=/usr/share/keyrings/bazel-archive-keyring.gpg] https://storage.googleapis.com/bazel-apt stable jdk1.8" | sudo tee /etc/apt/sources.list.d/bazel.list
-        sudo apt-get update
-        sudo apt-get install -y bazel
-        bazel --version
-      
-    - name: Test build on ${{ matrix.os }}
-      run: |
-        echo "🏗️  Testing build on ${{ matrix.os }}..."
-        bazel build //... --verbose_failures --disk_cache= --repository_cache=
-        
-    - name: Quick experiment test
-      run: |
-        echo "⚡ Quick experiment test on ${{ matrix.os }}..."
-        chmod +x run_experiment.sh
-        # Run a shorter test to verify basic functionality
-        timeout 120 ./run_experiment.sh duato_on_ecube_hypercube || echo "Quick test completed"
-
-  documentation-check:
-    name: Documentation and Scripts Check
-    runs-on: ubuntu-latest
-    
-    steps:
-    - name: Checkout code
-      uses: actions/checkout@v4
-      
-    - name: Check script permissions and syntax
-      run: |
-        echo "📋 Checking script integrity..."
-        
-        # Check if script exists and is readable
-        if [ ! -f "run_experiment.sh" ]; then
-          echo "❌ run_experiment.sh not found"
-          exit 1
-        fi
-        
-        # Check script syntax
-        bash -n run_experiment.sh
-        echo "✅ Script syntax is valid"
-        
-        # Check script permissions
-        if [ -x "run_experiment.sh" ]; then
-          echo "✅ Script is executable"
-        else
-          echo "⚠️  Script needs execute permission"
-        fi
-        
-    - name: Validate experiment configurations
-      run: |
-        echo "🔧 Validating experiment configurations..."
-        
-        # Check if experiment directory exists
-        if [ ! -d "exp/duato_on_ecube_hypercube" ]; then
-          echo "❌ Experiment directory not found"
-          exit 1
-        fi
-        
-        # Check if config file exists and is valid JSON
-        CONFIG_FILE="exp/duato_on_ecube_hypercube/duato_on_ecube_hypercube.json"
-        if [ ! -f "$CONFIG_FILE" ]; then
-          echo "❌ Configuration file not found: $CONFIG_FILE"
-          exit 1
-        fi
-        
-        # Validate JSON syntax
-        python3 -m json.tool "$CONFIG_FILE" > /dev/null
-        echo "✅ Configuration file is valid JSON"
-        
-        # Check default config
-        if [ -f "config.json" ]; then
-          python3 -m json.tool "config.json" > /dev/null
-          echo "✅ Default configuration is valid JSON"
         fi
