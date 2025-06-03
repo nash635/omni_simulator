@@ -1,23 +1,7 @@
 # omni_simulator Project
 
-[![CI - Experiment Test](https://github.com/nash635/omni_simulator/actions/workflows/experiment-test.yml/badge.svg)](https://github.com/nash635/omni_simulator/actions/workflows/experiment-test.yml)
-[![CI/CD Pipeline](https://github.com/nash635/omni_simulator/actions/workflows/ci.yml/badge.svg)](https://github.com/nash635/omni_simulator/actions/workflows/ci.yml)
+[![CI - Experiment Test](https://github.com/nash635/omni_simulator/actions/workflows/ci.yml/badge.svg)](https://github.com/nash635/omni_simulator/actions/workflows/ci.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-
-
-### Quick CI Test (Local)
-
-Test the CI setup locally before pushing:
-
-```bash
-# Test CI configuration and experiment
-chmod +x test_ci_setup.sh
-./test_ci_setup.sh
-
-# Deploy CI/CD setup to GitHub
-chmod +x deploy_ci.sh
-./deploy_ci.sh
-```
 
 ## Overview
 
@@ -229,68 +213,6 @@ chmod +x run_experiment.sh
 ./run_experiment.sh duato_on_ecube_hypercube         # Run hypercube experiment
 ```
 
-#### Available Experiment Configurations
-
-The script automatically discovers experiments in the `exp/` directory:
-
-1. **duato_2d_mesh**: Duato's protocol on 2D mesh topology
-2. **duato_on_ecube_hypercube**: Duato's protocol on hypercube with E-cube baseline
-
-Each experiment includes:
-- Network topology configuration
-- Routing algorithm settings
-- Traffic pattern specifications
-- Performance measurement parameters
-
-#### Automated Features
-
-The experiment runner provides:
-
-- **System Requirements Check**: Verifies GCC and Bazel versions
-- **Automatic Build Management**: Handles compilation with various options
-- **Configuration Management**: Backs up and restores config files automatically
-- **Results Organization**: Saves results with timestamps in organized directories
-- **Batch Processing**: Runs multiple experiments sequentially
-- **Error Handling**: Graceful failure recovery and cleanup
-- **Progress Reporting**: Colored output with clear status indicators
-
-### CI/CD Integration
-
-The repository includes comprehensive CI/CD integration that automatically validates experiment execution:
-
-#### Automated Testing
-Every push and pull request triggers automated testing that:
-- ✅ **Builds the project** with multiple GCC versions (9, 11)
-- ✅ **Validates system requirements** (GCC, Bazel, Python)
-- ✅ **Runs the core experiment**: `./run_experiment.sh duato_on_ecube_hypercube`
-- ✅ **Checks result generation** and output validation
-- ✅ **Tests cross-platform compatibility** (Ubuntu 20.04/22.04)
-
-#### CI Status Monitoring
-Monitor the health of the project through these automated checks:
-
-| Check Type | Current Status | Description |
-|------------|----------------|-------------|
-| **Experiment Test** | ![Experiment](https://github.com/nash635/omni_simulator/actions/workflows/experiment-test.yml/badge.svg) | Core experiment execution |
-| **Full CI Pipeline** | ![CI](https://github.com/nash635/omni_simulator/actions/workflows/ci.yml/badge.svg) | Complete build and test suite |
-
-#### Viewing Test Results
-- **Live Status**: Check the [Actions tab](https://github.com/nash635/omni_simulator/actions) for real-time CI results
-- **Test Artifacts**: Download experiment outputs and logs from completed CI runs
-- **Failure Investigation**: Detailed logs available for debugging failed experiments
-
-#### Local CI Validation
-You can run the same validations locally:
-
-```bash
-# Run the CI validation script
-chmod +x .github/scripts/validate_ci.sh
-.github/scripts/validate_ci.sh
-
-# Run the experiment test script
-chmod +x .github/scripts/run_experiment_test.sh
-.github/scripts/run_experiment_test.sh
-```
 
 ### Manual Execution (Alternative Method)
 
@@ -367,31 +289,11 @@ If you use omni_simulator in your research, please cite:
 @software{omni_simulator2025,
   title={omni_simulator: Network Routing Simulator},
   author={nash635},
-  email={shaj24@mails.tsinghua.edu.cn},
   year={2025},
   url={https://github.com/nash635/omni_simulator},
   license={MIT}
 }
 ```
-
-## Contributing
-
-We welcome contributions to omni_simulator! Please follow these guidelines:
-
-1. **Fork** the repository
-2. **Create** a feature branch
-3. **Implement** your changes with appropriate tests
-4. **Submit** a pull request with detailed description
-
-## Future Work
-
-The project is designed with extensibility in mind. Planned enhancements include:
-
-- **Additional Topologies**: 3D mesh, torus, and fat-tree networks
-- **Advanced Routing**: Adaptive routing algorithms and machine learning-based routing
-- **Traffic Patterns**: Real-world application traces and synthetic patterns
-- **Performance Tools**: GUI interface and real-time visualization
-- **Scalability**: Support for larger networks and distributed simulation
 
 ---
 
