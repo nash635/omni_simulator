@@ -17,16 +17,14 @@
 #include <chrono>
 #include <ctime>
 
+#include "simulator/simulation_context.h"
 #include "simulator/simulator.h"
-#include "routing/duato_protocol.h"
-#include "routing/ecube_routing.h"
-#include "routing/duato_hypercube_protocol.h"
 #include "utils/config.h"
 #include "utils/table_formatter.h"
 
-// Hypercube related headers
-#include "network/hypercube_network.h"
-#include "traffic/hypercube_uniform_traffic.h"
+// Network and routing factories
+#include "network/network_factory.h"
+#include "routing/routing_factory.h"
 
 // Result data structure
 struct ExperimentResult {
@@ -250,9 +248,6 @@ int main() {
         std::cerr << "Failed to load configuration file. Using default settings." << std::endl;
     }
 
-    std::string routingAlgorithm = config.getRoutingAlgorithm();
-    std::string networkTopology = config.getNetworkTopology();
-
     std::string simulationName = config.getSimulationName();
     std::string simulationDescription = config.getSimulationDescription();
     
@@ -266,56 +261,24 @@ int main() {
     std::cout << "Copyright (c) 2025 nash635" << std::endl;
     std::cout << "================================================================================" << std::endl;
     
-    Simulator* simulator = nullptr;
-    std::string finalNetworkDescription; // For subsequent result output
+    // Create simulation context using the new factory-based design
+    SimulationContext simulationContext(config);
     
-    if (config.isHypercubeMode()) {
-        // Hypercube mode
-        int dimension = config.getHypercubeDimension();
-        std::cout << "Initializing " << dimension << "-dimension hypercube network" << std::endl;
+    try {
+        // Initialize the simulation context
+        simulationContext.initialize();
         
-        auto hypercubeNetwork = new HypercubeNetwork(dimension);
-        hypercubeNetwork->initializeTopology();
+        // Print setup information
+        simulationContext.printSetupInfo();
         
-        // Select routing algorithm based on configuration
-        RoutingAlgorithm* routingAlgorithmInstance = nullptr;
-        if (routingAlgorithm == "duato") {
-            routingAlgorithmInstance = new DuatoHypercubeProtocol(hypercubeNetwork, &config);
-            std::cout << "Using Duato Protocol for Hypercube (with E-cube baseline routing)" << std::endl;
-        } else if (routingAlgorithm == "ecube") {
-            routingAlgorithmInstance = new EcubeRouting(hypercubeNetwork);
-            std::cout << "Using E-cube Routing for Hypercube" << std::endl;
-        } else {
-            // Default to E-cube
-            routingAlgorithmInstance = new EcubeRouting(hypercubeNetwork);
-            std::cout << "Using default E-cube Routing for Hypercube" << std::endl;
-        }
-        
-        simulator = new Simulator(hypercubeNetwork);
-        simulator->setRoutingAlgorithm(routingAlgorithmInstance);
-        
-        finalNetworkDescription = std::to_string(dimension) + "D-hypercube (" + 
-                           std::to_string(hypercubeNetwork->getTotalNodes()) + " nodes)";
-    } else {
-        // 2D Mesh mode
-        auto networkSize = config.getNetworkSize2D();
-        std::cout << "Initializing " << networkSize[0] << "x" << networkSize[1] << " 2D mesh network" << std::endl;
-        
-        simulator = new Simulator(networkSize[0], networkSize[1]);
-        
-        // Set routing algorithm based on configuration
-        if (routingAlgorithm == "duato") {
-            std::cout << "Using Duato Protocol for 2D Mesh" << std::endl;
-            // DuatoProtocol is already set by default in Simulator constructor
-        } else {
-            std::cout << "Warning: " << routingAlgorithm << " may not be fully supported for 2D mesh. Using Duato Protocol." << std::endl;
-        }
-        
-        finalNetworkDescription = std::to_string(networkSize[0]) + "x" + std::to_string(networkSize[1]);
+    } catch (const std::exception& e) {
+        std::cerr << "Failed to initialize simulation: " << e.what() << std::endl;
+        return 1;
     }
-    
-    simulator->initializeNetwork();
-    
+
+    // Get the simulator from the context
+    Simulator* simulator = simulationContext.getSimulator();
+
     // Get injection rate list
     auto injectionRates = config.getPacketInjectionRates();
     std::cout << "Testing " << injectionRates.size() << " injection rates: ";
@@ -328,16 +291,13 @@ int main() {
     // Open results file
     std::ofstream resultsFile(config.getOutputFile());
     
-    std::string actualAlgorithmDescription;
-    if (config.isHypercubeMode() && routingAlgorithm == "duato") {
-        actualAlgorithmDescription = "Duato's Protocol for Hypercubes (E-cube baseline)";
-    } else {
-        actualAlgorithmDescription = config.getRoutingAlgorithmDescription();
-    }
+    // Get descriptions from simulation context
+    std::string finalNetworkDescription = simulationContext.getNetworkDescription();
+    std::string actualAlgorithmDescription = simulationContext.getRoutingDescription();
     
     resultsFile << "# omni_simulator Results - " << actualAlgorithmDescription << "\n";
     resultsFile << "# Network: " << finalNetworkDescription << "\n";
-    resultsFile << "# Routing Algorithm: " << routingAlgorithm << "\n";
+    resultsFile << "# Routing Algorithm: " << config.getRoutingAlgorithm() << "\n";
     resultsFile << "# Network Topology: " << config.getNetworkTopology() << "\n";
     if (config.isHypercubeMode()) {
         resultsFile << "# Baseline Routing: E-cube\n";
@@ -490,8 +450,7 @@ int main() {
     std::cout << "Thank you for using omni_simulator!" << std::endl;
     std::cout << std::string(80, '=') << std::endl;
 
-    // Cleanup
-    delete simulator;
+    // No need to manually delete simulator - SimulationContext handles cleanup
     
     return 0;
 }
