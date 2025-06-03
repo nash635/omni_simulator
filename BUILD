@@ -1,7 +1,13 @@
 cc_library(
     name = "simulator",
-    srcs = ["src/simulator/simulator.cpp"],
-    hdrs = ["src/simulator/simulator.h"],
+    srcs = [
+        "src/simulator/simulator.cpp",
+        "src/simulator/simulation_context.cpp",
+    ],
+    hdrs = [
+        "src/simulator/simulator.h",
+        "src/simulator/simulation_context.h",
+    ],
     includes = ["src"],
     deps = [
         ":network",
@@ -21,6 +27,7 @@ cc_library(
         "src/network/link.cpp",
         "src/network/hypercube_network.cpp",
         "src/network/hypercube_node.cpp",
+        "src/network/network_factory.cpp",
     ],
     hdrs = [
         "src/network/network.h",
@@ -30,6 +37,7 @@ cc_library(
         "src/network/hypercube_network.h",
         "src/network/hypercube_node.h",
         "src/network/hypercube_virtual_channel.h",
+        "src/network/network_factory.h",
     ],
     includes = ["src"],
     deps = [":utils", ":message"],
@@ -41,12 +49,14 @@ cc_library(
         "src/routing/duato_protocol.cpp",
         "src/routing/ecube_routing.cpp",
         "src/routing/duato_hypercube_protocol.cpp",
+        "src/routing/routing_factory.cpp",
     ],
     hdrs = [
         "src/routing/routing_algorithm.h", 
         "src/routing/duato_protocol.h",
         "src/routing/ecube_routing.h",
         "src/routing/duato_hypercube_protocol.h",
+        "src/routing/routing_factory.h",
     ],
     includes = ["src"],
     deps = [":utils", ":message", ":network"],
