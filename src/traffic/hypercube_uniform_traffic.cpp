@@ -1,7 +1,6 @@
 /*
  * omni_simulator - Network Routing Simulator
  * Copyright (c) 2025 nash635
- * Email: shaj24@mails.tsinghua.edu.cn
  * 
  * This software is licensed under the MIT License.
  * See the LICENSE file for more details.

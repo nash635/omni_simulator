@@ -289,6 +289,7 @@ If you use omni_simulator in your research, please cite:
 @software{omni_simulator2025,
   title={omni_simulator: Network Routing Simulator},
   author={nash635},
+  email={shaj24@mails.tsinghua.edu.cn}
   year={2025},
   url={https://github.com/nash635/omni_simulator},
   license={MIT}
