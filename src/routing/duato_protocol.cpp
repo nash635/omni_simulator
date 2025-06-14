@@ -1,3 +1,12 @@
+/*
+ * omni_simulator - Network Routing Simulator
+ * Duato's Deadlock-Free Routing Protocol Implementation
+ * Copyright (c) 2025 nash635
+ * 
+ * This software is licensed under the MIT License.
+ * See the LICENSE file for more details.
+ */
+
 #include "duato_protocol.h"
 #include "network/network.h"
 #include "network/node.h"

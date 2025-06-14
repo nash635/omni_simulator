@@ -2,7 +2,6 @@
 
 # omni_simulator Experiment Runner
 # Copyright (c) 2025 nash635
-# Email: shaj24@mails.tsinghua.edu.cn
 
 set -e  # Exit on any error
 
